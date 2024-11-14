@@ -5,6 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fyp/firebase_options.dart';
 import 'package:fyp/pages/login_page.dart';
 import 'package:fyp/pages/register_page.dart';
+
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -12,6 +14,8 @@ void main() async{
   );
   runApp(const MyApp());
 }
+
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
