@@ -360,9 +360,7 @@ class MyCustomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < points.length - 1; i++) {
-      if (points[i] != null &&
-          points[i + 1] != null &&
-          points[i].point != Offset.zero &&
+      if (points[i].point != Offset.zero &&
           points[i + 1].point != Offset.zero) {
         canvas.drawLine(
           points[i].point,

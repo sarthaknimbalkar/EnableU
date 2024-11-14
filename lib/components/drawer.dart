@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:fyp/components/my_list_tile.dart';
 
 class MyDrawer extends StatelessWidget {
-  void Function()? onHomeTap;
-  void Function()? onProfileTap;
-  void Function()? onLeaderboardTap;
-  MyDrawer({
+  final void Function()? onHomeTap;
+  final void Function()? onProfileTap;
+  final void Function()? onLeaderboardTap;
+
+  const MyDrawer({
     super.key,
-    required this.onHomeTap,
+    this.onHomeTap,
     this.onProfileTap,
     this.onLeaderboardTap,
   });
@@ -18,30 +19,50 @@ class MyDrawer extends StatelessWidget {
       backgroundColor: Colors.grey[900],
       child: Column(
         children: [
-          //header
+          // Header with icon or user avatar
           DrawerHeader(
-            child: Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 64,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 64,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Username', // Replace with dynamic data if available
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
-          //home list tile
+
+          // Navigation items
           MyListTile(
             icon: Icons.home,
-            text: 'H O M E',
-            onTap: onHomeTap,
+            text: 'Home',
+            onTap: () {
+              if (onHomeTap != null) onHomeTap!();
+            },
           ),
-          //profile
           MyListTile(
             icon: Icons.person,
-            text: 'P R O F I L E',
-            onTap: onProfileTap,
+            text: 'Profile',
+            onTap: () {
+              if (onProfileTap != null) onProfileTap!();
+            },
           ),
           MyListTile(
             icon: Icons.celebration,
-            text: 'L E A D E R B O A R D',
-            onTap: onLeaderboardTap,
+            text: 'Leaderboard',
+            onTap: () {
+              if (onLeaderboardTap != null) onLeaderboardTap!();
+            },
           ),
         ],
       ),

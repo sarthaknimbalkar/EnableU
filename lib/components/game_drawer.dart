@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:fyp/components/my_list_tile.dart';
 
 class MyGameDrawer extends StatelessWidget {
-  void Function()? onHomeTap;
-  void Function()? onGameTap;
-  void Function()? onLeaderboardTap;
+  final void Function()? onHomeTap;
+  final void Function()? onGameTap;
+  final void Function()? onLeaderboardTap;
 
-  MyGameDrawer(
-      {super.key,
-      required this.onHomeTap,
-      this.onGameTap,
-      this.onLeaderboardTap});
+  const MyGameDrawer({
+    super.key,
+    required this.onHomeTap,
+    this.onGameTap,
+    this.onLeaderboardTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,31 +19,55 @@ class MyGameDrawer extends StatelessWidget {
       backgroundColor: Colors.grey[900],
       child: Column(
         children: [
-          //header
+          // Drawer Header with Icon and Text
           DrawerHeader(
-            child: Icon(
-              Icons.gamepad,
-              color: Colors.white,
-              size: 64,
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.gamepad,
+                  color: Colors.white,
+                  size: 64,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Game Menu', // Dynamic text can be added here
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
-          //home list tile
+          // Home ListTile
           MyListTile(
             icon: Icons.home,
-            text: 'H O M E',
+            text: 'Home',
             onTap: onHomeTap,
           ),
-          //profile
+          // Game ListTile
           MyListTile(
-            icon: Icons.abc,
-            text: 'G A M E S',
+            icon: Icons.games,
+            text: 'Games',
             onTap: onGameTap,
           ),
+          // Leaderboard ListTile
           MyListTile(
-            icon: Icons.celebration,
-            text: 'L E A D E R B O A R D',
+            icon: Icons.leaderboard,
+            text: 'Leaderboard',
             onTap: onLeaderboardTap,
           ),
+          const Divider(color: Colors.white24), // Divider to separate sections
+          // Add other items or footer if necessary
         ],
       ),
     );

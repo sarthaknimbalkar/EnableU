@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fyp/auth/auth.dart';
-import 'package:fyp/auth/login_or_register.dart';
-import 'package:fyp/pages/login_page.dart';
-import 'package:fyp/pages/register_page.dart';
 import 'package:fyp/firebase_options.dart';
 
 void main() async {
