@@ -11,109 +11,143 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  //user
-  final currentUser=FirebaseAuth.instance.currentUser!;
-  //all users
-  final userCollection=FirebaseFirestore.instance.collection('users');
+  // User data
+  final User currentUser = FirebaseAuth.instance.currentUser!;
+  final CollectionReference userCollection = FirebaseFirestore.instance
+      .collection('users');
 
-  //edit field
-  Future<void> editField(String field) async{
-
-    String newValue='';
-    await showDialog(context: context,
-        builder: (context)=>AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title: Text('Edit '+field,
-          style: TextStyle(
-            color: Colors.white,
-          ),),
-          content: TextField(
-            autofocus: true,
-            style: TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: "Enter new ${field}",
-                  hintStyle: TextStyle(color: Colors.grey),
+  // Method to edit a specific field
+  Future<void> editField(String field) async {
+    String newValue = '';
+    await showDialog(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            backgroundColor: Colors.grey[900],
+            title: Text(
+              'Edit $field',
+              style: const TextStyle(color: Colors.white),
             ),
-            onChanged: (value){
-              newValue=value;
-            },
+            content: TextField(
+              autofocus: true,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Enter new $field",
+                hintStyle: const TextStyle(color: Colors.grey),
+              ),
+              onChanged: (value) {
+                newValue = value;
+              },
+            ),
+            actions: [
+              // Cancel button
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              // Save button
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(newValue),
+                child: const Text(
+                  'Save',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-          actions: [
-            //cancel button
-            TextButton(onPressed:()=>Navigator.pop(context), child: Text('Cancel',
-              style: TextStyle(
-                color: Colors.white
-              ),)),
-            //save button
-            TextButton(onPressed:()=>Navigator.of(context).pop(newValue),
-                child: Text('Save',
-              style: TextStyle(
-                  color: Colors.white
-              ),)),
-          ],
-        )
-        );
-    //update in firestore
-    if(newValue.trim().length>0){
-      //only update if there's some value
-      await userCollection.doc(currentUser.email).update({field:newValue});
+    );
+
+    // Update Firestore only if there's a new non-empty value
+    if (newValue
+        .trim()
+        .isNotEmpty) {
+      await userCollection.doc(currentUser.email).update({field: newValue});
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[300],
       appBar: AppBar(
-        title: Text('Profile Page',
-        style: TextStyle(
-          color: Colors.white,
-        ),),
+        title: const Text(
+          'Profile Page',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.grey[700],
       ),
       body: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.email)
-          .snapshots()
-          , builder:(context,snapshot){
-            if(snapshot.hasData){
-              final userData= snapshot.data!.data() as Map<String,dynamic>;
+        stream: userCollection.doc(currentUser.email).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final userData = snapshot.data!.data() as Map<String, dynamic>?;
 
-              return ListView(
-                children: [
-                  SizedBox(height: 50,),
-                  //profile pic
-                  Icon(Icons.person,
-                      size:72),
-                  //email
-                  Text(currentUser.email!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                    ),),
-                  SizedBox(height: 50,),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25.0),
-                    child: Text('My details',style: TextStyle(color: Colors.grey[700]),),
-                  ),
-
-                  //username
-                  MyTextBox(text: userData['username'], sectionName: 'Username',
-                    onPressed: ()=>editField('username'),),
-                  SizedBox(height: 25,),
-                  //bio
-                  MyTextBox(text: userData['bio'], sectionName: 'Bio',
-                    onPressed: ()=>editField('bio'),),
-                ],
-              );
-            } else if(snapshot.hasError){
-              return Center(
-                child: Text('Error ${snapshot.error}'),
+            // If userData is null, show an error
+            if (userData == null) {
+              return const Center(
+                child: Text("User data not found."),
               );
             }
-            return Center(child: CircularProgressIndicator());
-      }
-      )
+
+            return SingleChildScrollView( // Wrap the content in a scroll view
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 50),
+                  // Profile picture
+                  const Center(
+                    child: Icon(
+                      Icons.person,
+                      size: 72,
+                    ),
+                  ),
+                  // Email
+                  Center(
+                    child: Text(
+                      currentUser.email!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[700]),
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 25.0),
+                    child: Text(
+                      'My details',
+                      style: TextStyle(color: Colors.grey[700]),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Username
+                  MyTextBox(
+                    text: userData['username'] ?? 'No username',
+                    sectionName: 'Username',
+                    onPressed: () => editField('username'),
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Bio
+                  MyTextBox(
+                    text: userData['bio'] ?? 'No bio available',
+                    sectionName: 'Bio',
+                    onPressed: () => editField('bio'),
+                  ),
+                  const SizedBox(height: 25),
+                ],
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
     );
   }
 }
