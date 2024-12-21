@@ -13,7 +13,6 @@ class MotivationalQuotesApp extends StatelessWidget {
       title: 'Daily Motivational Quotes',
       theme: ThemeData(
         primaryColor: Colors.black45,
-        hintColor: Colors.black45,
         fontFamily: 'Georgia',
         textTheme: TextTheme(
           displayLarge: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
@@ -43,30 +42,31 @@ class _QuotePageState extends State<QuotePage> {
   }
 
   Future<void> fetchQuote() async {
-    const quoteUrl = 'https://api.quotable.io/random';
+    const quoteUrl = 'https://zenquotes.io/api/random';
     try {
-      final quoteResponse = await http.get(Uri.parse(quoteUrl));
-      if (quoteResponse.statusCode == 200) {
-        var quoteData = jsonDecode(quoteResponse.body);
+      final response = await http.get(Uri.parse(quoteUrl));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)[0];
         setState(() {
-          quote = quoteData['content'];
-          author = quoteData['author'] ?? 'Unknown';
+          quote = data['q'];
+          author = data['a'] ?? 'Unknown';
+          backgroundImage =
+          'https://picsum.photos/800/600?random=${DateTime.now().millisecondsSinceEpoch}';
         });
       } else {
-        throw Exception('Failed to load quote');
+        setState(() {
+          quote = 'Failed to load quote. Please try again later.';
+          author = '';
+        });
       }
-
-      setState(() {
-        backgroundImage =
-            'https://picsum.photos/800/600?random=${DateTime.now().millisecondsSinceEpoch}';
-      });
     } catch (e) {
       setState(() {
-        quote = 'Failed to load quote.';
+        quote = 'Failed to load quote. Check your internet connection.';
         author = '';
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class _QuotePageState extends State<QuotePage> {
               style: TextStyle(
                 fontSize: 24,
                 fontStyle: FontStyle.italic,
-                color: Colors.yellowAccent, // Bright and visible text color
+                color: Colors.yellowAccent,
                 shadows: [
                   Shadow(
                     blurRadius: 5.0,
@@ -107,11 +107,11 @@ class _QuotePageState extends State<QuotePage> {
             ),
             SizedBox(height: 20),
             Text(
-              '- $author',
+              author.isNotEmpty ? '- $author' : '',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.yellowAccent, // Matching the quote color
+                color: Colors.yellowAccent,
               ),
               textAlign: TextAlign.right,
             ),
@@ -120,8 +120,7 @@ class _QuotePageState extends State<QuotePage> {
               onPressed: fetchQuote,
               child: Text(
                 'New Quote',
-                style: TextStyle(
-                    color: Colors.black), // Button text color to black
+                style: TextStyle(color: Colors.black),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent[700],
