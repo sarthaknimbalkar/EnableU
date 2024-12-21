@@ -11,109 +11,182 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  //user
-  final currentUser=FirebaseAuth.instance.currentUser!;
-  //all users
-  final userCollection=FirebaseFirestore.instance.collection('users');
+  // User
+  final currentUser = FirebaseAuth.instance.currentUser!;
+  // All users
+  final userCollection = FirebaseFirestore.instance.collection('users');
 
-  //edit field
-  Future<void> editField(String field) async{
-
-    String newValue='';
-    await showDialog(context: context,
-        builder: (context)=>AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title: Text('Edit '+field,
+  // Edit field
+  Future<void> editField(String field) async {
+    String newValue = '';
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          'Edit $field',
           style: TextStyle(
             color: Colors.white,
-          ),),
-          content: TextField(
-            autofocus: true,
-            style: TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: "Enter new ${field}",
-                  hintStyle: TextStyle(color: Colors.grey),
-            ),
-            onChanged: (value){
-              newValue=value;
-            },
           ),
-          actions: [
-            //cancel button
-            TextButton(onPressed:()=>Navigator.pop(context), child: Text('Cancel',
-              style: TextStyle(
-                color: Colors.white
-              ),)),
-            //save button
-            TextButton(onPressed:()=>Navigator.of(context).pop(newValue),
-                child: Text('Save',
-              style: TextStyle(
-                  color: Colors.white
-              ),)),
-          ],
-        )
-        );
-    //update in firestore
-    if(newValue.trim().length>0){
-      //only update if there's some value
-      await userCollection.doc(currentUser.email).update({field:newValue});
+        ),
+        content: TextField(
+          autofocus: true,
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: "Enter new $field",
+            hintStyle: TextStyle(color: Colors.grey),
+          ),
+          onChanged: (value) {
+            newValue = value;
+          },
+        ),
+        actions: [
+          // Cancel button
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white),
+              )),
+          // Save button
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(newValue),
+              child: Text(
+                'Save',
+                style: TextStyle(color: Colors.white),
+              )),
+        ],
+      ),
+    );
+    // Update in Firestore
+    if (newValue.trim().isNotEmpty) {
+      await userCollection.doc(currentUser.email).update({field: newValue});
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('Profile Page',
-        style: TextStyle(
-          color: Colors.white,
-        ),),
-        backgroundColor: Colors.grey[700],
+        title: Text(
+          'Profile',
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: StreamBuilder<DocumentSnapshot>(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.blueAccent.shade200,
+              Colors.purpleAccent.shade100,
+            ],
+          ),
+        ),
+        child: StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.email)
-          .snapshots()
-          , builder:(context,snapshot){
-            if(snapshot.hasData){
-              final userData= snapshot.data!.data() as Map<String,dynamic>;
+              .collection('users')
+              .doc(currentUser.email)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final userData = snapshot.data!.data() as Map<String, dynamic>;
 
-              return ListView(
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 50,),
-                  //profile pic
-                  Icon(Icons.person,
-                      size:72),
-                  //email
-                  Text(currentUser.email!,
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 80),
+
+                  // Profile Picture
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Email
+                  Text(
+                    currentUser.email!,
                     style: TextStyle(
-                      color: Colors.grey[700],
-                    ),),
-                  SizedBox(height: 50,),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25.0),
-                    child: Text('My details',style: TextStyle(color: Colors.grey[700]),),
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
 
-                  //username
-                  MyTextBox(text: userData['username'], sectionName: 'Username',
-                    onPressed: ()=>editField('username'),),
-                  SizedBox(height: 25,),
-                  //bio
-                  MyTextBox(text: userData['bio'], sectionName: 'Bio',
-                    onPressed: ()=>editField('bio'),),
+                  const SizedBox(height: 30),
+
+                  // Details Section
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 30.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(40.0),
+                          topRight: Radius.circular(40.0),
+                        ),
+                      ),
+                      child: ListView(
+                        children: [
+                          Text(
+                            'My Details',
+                            style: TextStyle(
+                              fontSize: 22.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Username
+                          MyTextBox(
+                            text: userData['username'],
+                            sectionName: 'Username',
+                            onPressed: () => editField('username'),
+                          ),
+
+                          const SizedBox(height: 25),
+
+                          // Bio
+                          MyTextBox(
+                            text: userData['bio'],
+                            sectionName: 'Bio',
+                            onPressed: () => editField('bio'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               );
-            } else if(snapshot.hasError){
+            } else if (snapshot.hasError) {
               return Center(
-                child: Text('Error ${snapshot.error}'),
+                child: Text('Error: ${snapshot.error}'),
               );
             }
-            return Center(child: CircularProgressIndicator());
-      }
-      )
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(Colors.white),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
