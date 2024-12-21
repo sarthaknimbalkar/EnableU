@@ -21,6 +21,8 @@ class _HomePageState extends State<HomePage>
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
+  bool isNightMode = true;
+
   @override
   void initState() {
     super.initState();
@@ -45,30 +47,55 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
+  void toggleTheme() {
+    setState(() {
+      isNightMode = !isNightMode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final email = currentUser?.email ?? '';
     final name = email.split('@').first;
 
+    final backgroundColor = isNightMode ? Color(0xFF121212) : Colors.white;
+    final appBarColor = isNightMode ? Colors.blueGrey[900] : Colors.lightBlueAccent;
+    final textColor = isNightMode ? Color(0xFFE0E0E0) : Colors.black;
+    final appBarTextColor = isNightMode ? Color(0xFFE0E0E0) : Colors.blueGrey[900];
+    final tileColors = [
+      isNightMode ? Colors.orange.withOpacity(0.8) : Colors.deepOrangeAccent.withOpacity(0.9),
+      isNightMode ? Colors.green.withOpacity(0.8) : Colors.lightGreenAccent.withOpacity(0.9),
+      isNightMode ? Colors.blue.withOpacity(0.8) : Colors.lightBlue.withOpacity(0.9),
+      isNightMode ? Colors.purple.withOpacity(0.8) : Colors.deepPurpleAccent.withOpacity(0.9),
+    ];
+    final tileTextColor = isNightMode ? Color(0xFFE0E0E0) : Colors.white70;
+
     return Scaffold(
-      backgroundColor: Colors.black87, // Dark background color
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.blueGrey[900],
+        backgroundColor: appBarColor,
         title: Text(
           'Welcome $name',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24.0,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: appBarTextColor,
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: toggleTheme,
+            icon: Icon(
+              isNightMode ? Icons.light_mode : Icons.dark_mode,
+              color: appBarTextColor,
+            ),
+          ),
           IconButton(
             onPressed: () {
               FirebaseAuth.instance.signOut();
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
-            icon: const Icon(Icons.logout, color: Colors.white),
+            icon: Icon(Icons.logout, color: appBarTextColor),
           ),
         ],
       ),
@@ -77,7 +104,8 @@ class _HomePageState extends State<HomePage>
           // Animated Background Symbols
           Positioned.fill(
             child: CustomPaint(
-              painter: BackgroundSymbolPainter(_animationController.value),
+              painter: BackgroundSymbolPainter(
+                  _animationController.value, isNightMode),
             ),
           ),
           // Blocks directly on the background
@@ -98,28 +126,32 @@ class _HomePageState extends State<HomePage>
                         'Discussion Forum',
                         Forum(),
                         Icons.forum,
-                        Colors.orange,
+                        tileColors[0],
+                        tileTextColor,
                       ),
                       _buildAnimatedTile(
                         context,
                         'Play Games',
                         GamesListPage(),
                         Icons.videogame_asset,
-                        Colors.green,
+                        tileColors[1],
+                        tileTextColor,
                       ),
                       _buildAnimatedTile(
                         context,
                         'Leaderboard',
                         LeaderboardPage(),
                         Icons.leaderboard,
-                        Colors.blue,
+                        tileColors[2],
+                        tileTextColor,
                       ),
                       _buildAnimatedTile(
                         context,
                         'Quote for the day',
                         QuotePage(),
                         Icons.format_quote,
-                        Colors.purple,
+                        tileColors[3],
+                        tileTextColor,
                       ),
                     ],
                   ),
@@ -132,10 +164,10 @@ class _HomePageState extends State<HomePage>
                       scale: 1 + (_scaleAnimation.value * 0.1),
                       child: Text(
                         'Learn, Play, and Grow!',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white70,
+                          color: textColor,
                         ),
                       ),
                     );
@@ -151,7 +183,7 @@ class _HomePageState extends State<HomePage>
 
   // Function to create an animated tile
   Widget _buildAnimatedTile(BuildContext context, String title, Widget route,
-      IconData icon, Color color) {
+      IconData icon, Color? color, Color textColor) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -166,11 +198,11 @@ class _HomePageState extends State<HomePage>
             scale: 1 + (_scaleAnimation.value * 0.05),
             child: Container(
               decoration: BoxDecoration(
-                color: color.withOpacity(0.9), // More vibrant tile colors
+                color: color?.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(15.0),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.5),
+                    color: color!.withOpacity(0.5),
                     spreadRadius: 2,
                     blurRadius: 5,
                   ),
@@ -182,14 +214,14 @@ class _HomePageState extends State<HomePage>
                   Icon(
                     icon,
                     size: 50,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                   const SizedBox(height: 10.0),
                   Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 16.0,
                       fontWeight: FontWeight.bold,
                     ),
@@ -207,12 +239,16 @@ class _HomePageState extends State<HomePage>
 // Custom Painter for Background Symbols
 class BackgroundSymbolPainter extends CustomPainter {
   final double animationValue;
+  final bool isNightMode;
 
-  BackgroundSymbolPainter(this.animationValue);
+  BackgroundSymbolPainter(this.animationValue, this.isNightMode);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.blue.withOpacity(0.2);
+    final paint = Paint()
+      ..color = isNightMode
+          ? Colors.blue.withOpacity(0.2)
+          : Colors.yellow.withOpacity(0.2);
 
     // Draw circles moving across the screen
     for (int i = 0; i < 5; i++) {
@@ -220,7 +256,10 @@ class BackgroundSymbolPainter extends CustomPainter {
       final y = size.height * (0.2 * i + (1 - animationValue) * 0.2);
 
       // Skip areas where blocks are located
-      if (x > size.width * 0.1 && x < size.width * 0.9 && y > size.height * 0.2 && y < size.height * 0.8) {
+      if (x > size.width * 0.1 &&
+          x < size.width * 0.9 &&
+          y > size.height * 0.2 &&
+          y < size.height * 0.8) {
         continue;
       }
 
@@ -228,13 +267,18 @@ class BackgroundSymbolPainter extends CustomPainter {
     }
 
     // Draw squares moving across the screen
-    paint.color = Colors.green.withOpacity(0.2);
+    paint.color = isNightMode
+        ? Colors.green.withOpacity(0.2)
+        : Colors.orange.withOpacity(0.2);
     for (int i = 0; i < 5; i++) {
       final x = size.width * (0.25 * i - animationValue * 0.2);
       final y = size.height * (0.25 * i + animationValue * 0.2);
 
       // Skip areas where blocks are located
-      if (x > size.width * 0.1 && x < size.width * 0.9 && y > size.height * 0.2 && y < size.height * 0.8) {
+      if (x > size.width * 0.1 &&
+          x < size.width * 0.9 &&
+          y > size.height * 0.2 &&
+          y < size.height * 0.8) {
         continue;
       }
 
